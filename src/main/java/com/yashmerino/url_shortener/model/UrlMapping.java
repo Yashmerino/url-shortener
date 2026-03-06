@@ -1,6 +1,9 @@
 package com.yashmerino.url_shortener.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -9,12 +12,15 @@ import java.time.LocalDateTime;
  */
 @Entity(name = "url_mapping")
 @Table(name = "url_mapping")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UrlMapping {
     /**
      * Entity id.
      */
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
 
     /**
@@ -22,6 +28,12 @@ public class UrlMapping {
      */
     @Column(name = "original_url", nullable = false)
     private String originalUrl;
+
+    /**
+     * Short code.
+     */
+    @Column(name = "short_code", nullable = false)
+    private String shortCode;
 
     /**
      * When was entity created.

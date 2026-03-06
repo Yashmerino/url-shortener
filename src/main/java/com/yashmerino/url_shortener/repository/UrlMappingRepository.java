@@ -9,4 +9,12 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface UrlMappingRepository extends JpaRepository<UrlMapping, Long> {
+    /**
+     * Verify if the short code already exists.
+     *
+     * @param shortCode the short code.
+     *
+     * @return True if the short code already exists and False otherwise.
+     */
+    boolean existsByShortCode(final String shortCode);
 }
