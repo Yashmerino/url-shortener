@@ -20,10 +20,18 @@ public class UrlMapping {
     /**
      * Original URL.
      */
+    @Column(name = "original_url", nullable = false)
     private String originalUrl;
 
     /**
      * When was entity created.
      */
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    /**
+     * If the mapping was archived or not.
+     */
+    @Column(name = "is_archived", nullable = false)
+    private boolean isArchived;
 }
