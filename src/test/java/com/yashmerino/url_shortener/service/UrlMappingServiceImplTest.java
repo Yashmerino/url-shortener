@@ -9,12 +9,15 @@ import com.yashmerino.url_shortener.util.HashUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -30,33 +33,62 @@ class UrlMappingServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        // Simulăm un request HTTP pentru ca ServletUriComponentsBuilder să nu crape
         MockHttpServletRequest request = new MockHttpServletRequest();
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     }
 
     @Test
-    void shorten_ShouldSaveUrl_WhenShortCodeDoesNotExist() {
+    void shorten_ShouldSaveUrlAndGenerateBase62ShortCode() {
         UrlMappingPostDTO inputDto = new UrlMappingPostDTO("https://google.com");
-        String expectedCode = HashUtils.generateMD5(inputDto.getOriginalUrl()).substring(0, 6);
         
-        when(urlMappingRepository.existsByShortCode(expectedCode)).thenReturn(false);
-
+        UrlMapping savedMapping = UrlMapping.builder()
+                .id(1L)
+                .originalUrl("https://google.com")
+                .createdAt(LocalDateTime.now())
+                .isArchived(false)
+                .build();
+        
+        when(urlMappingRepository.save(any(UrlMapping.class))).thenReturn(savedMapping);
+        
         ShortUrlDTO result = urlMappingService.shorten(inputDto);
-
-        assertThat(result.getShortCode()).isEqualTo(expectedCode);
-        verify(urlMappingRepository, times(1)).save(any(UrlMapping.class));
+        
+        assertThat(result).isNotNull();
+        assertThat(result.getOriginalUrl()).isEqualTo("https://google.com");
+        assertThat(result.getShortCode()).isEqualTo("1"); // Base62(1L) = "1"
+        assertThat(result.getShortUrl()).endsWith("/1"); // No /redirect in path
+        
+        verify(urlMappingRepository, times(2)).save(any(UrlMapping.class));
     }
 
     @Test
-    void shorten_ShouldNotSaveUrl_WhenShortCodeAlreadyExists() {
-        UrlMappingPostDTO inputDto = new UrlMappingPostDTO("https://google.com");
-        String expectedCode = HashUtils.generateMD5(inputDto.getOriginalUrl()).substring(0, 6);
+    void shorten_ShouldCreateShortUrlWithCorrectBase62Format() {
+        UrlMappingPostDTO inputDto = new UrlMappingPostDTO("https://example.com");
         
-        when(urlMappingRepository.existsByShortCode(expectedCode)).thenReturn(true);
-
-        urlMappingService.shorten(inputDto);
-
-        verify(urlMappingRepository, never()).save(any(UrlMapping.class));
+        UrlMapping savedMapping = UrlMapping.builder()
+                .id(42L)
+                .originalUrl("https://example.com")
+                .createdAt(LocalDateTime.now())
+                .isArchived(false)
+                .build();
+        
+        when(urlMappingRepository.save(any(UrlMapping.class))).thenReturn(savedMapping);
+        
+        ShortUrlDTO result = urlMappingService.shorten(inputDto);
+        
+        String expectedShortCode = HashUtils.generateShortCode(42L);
+        assertThat(result.getShortCode()).isEqualTo(expectedShortCode);
+        assertThat(result.getShortUrl()).endsWith("/" + expectedShortCode); // No /redirect in path
     }
+
+    @Test
+    void shorten_ShouldUseBase62EncodingForIds() {
+        String code1 = HashUtils.generateShortCode(1L);
+        String code2 = HashUtils.generateShortCode(2L);
+        String code1Again = HashUtils.generateShortCode(1L);
+        
+        assertThat(code1).isNotEqualTo(code2);
+        assertThat(code1).isEqualTo(code1Again);
+        assertThat(code1).matches("[0-9A-Za-z]+");
+    }
+
 }

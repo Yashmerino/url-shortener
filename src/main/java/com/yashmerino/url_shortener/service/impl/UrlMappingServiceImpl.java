@@ -8,6 +8,7 @@ import com.yashmerino.url_shortener.service.UrlMappingService;
 import com.yashmerino.url_shortener.util.HashUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -36,22 +37,34 @@ public class UrlMappingServiceImpl implements UrlMappingService {
     @Transactional
     public ShortUrlDTO shorten(UrlMappingPostDTO urlMappingPostDTO) {
         final String originalURL = urlMappingPostDTO.getOriginalUrl();
-        final String shortCode = HashUtils.generateMD5(originalURL).substring(0, 6);
+
+        // Create and save the URL mapping first to get the ID
+        UrlMapping urlMapping = UrlMapping.builder()
+                .originalUrl(originalURL)
+                .createdAt(LocalDateTime.now())
+                .isArchived(false)
+                .build();
+
+        UrlMapping savedMapping = urlMappingRepository.save(urlMapping);
+        
+        // Generate short code based on the saved ID using Base62
+        String shortCode = HashUtils.generateShortCode(savedMapping.getId());
+        
+        // Update the short code in the database
+        savedMapping.setShortCode(shortCode);
+        
+        try {
+            urlMappingRepository.save(savedMapping);
+        } catch (DataIntegrityViolationException e) {
+            // TODO: Handle duplicate short code (DataIntegrityViolationException for uk_short_code constraint)
+            // Possible solutions: retry with modified ID, or return error
+            throw e;
+        }
 
         String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .build()
                 .toUriString();
         String shortUrl = baseUrl + "/" + shortCode;
-
-        if(!urlMappingRepository.existsByShortCode(shortCode)) {
-             UrlMapping urlMapping = UrlMapping.builder()
-                    .originalUrl(urlMappingPostDTO.getOriginalUrl())
-                    .shortCode(shortCode)
-                    .createdAt(LocalDateTime.now())
-                    .build();
-
-            urlMappingRepository.save(urlMapping);
-        }
 
         return ShortUrlDTO.builder()
                 .originalUrl(originalURL)

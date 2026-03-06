@@ -42,7 +42,7 @@ class UrlMappingRestControllerTest {
 
         when(urlMappingService.shorten(any(UrlMappingPostDTO.class))).thenReturn(responseDto);
 
-        mockMvc.perform(post("/shorten")
+        mockMvc.perform(post("/api/shorten")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isCreated())
@@ -52,7 +52,7 @@ class UrlMappingRestControllerTest {
 
     @Test
     void shorten_ShouldReturn400_WhenBodyIsMissing() throws Exception {
-        mockMvc.perform(post("/shorten")
+        mockMvc.perform(post("/api/shorten")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(""))
                 .andExpect(status().isBadRequest());

@@ -1,28 +1,29 @@
 package com.yashmerino.url_shortener.util;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
-
 /**
- * Util class that generates the MD5 hash.
+ * Util class that generates short codes using Base62 encoding.
  */
 public class HashUtils {
 
+    private static final String BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
     /**
-     * Generates MD5 hash.
+     * Generates a Base62-encoded short code from an ID.
      *
-     * @param input is the initial value.
+     * @param id is the database ID of the URL mapping.
      *
-     * @return the generated MD5 hash.
+     * @return the generated Base62 short code.
      */
-    public static String generateMD5(String input) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] messageDigest = md.digest(input.getBytes());
-            return HexFormat.of().formatHex(messageDigest);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("No such algorithm", e);
+    public static String generateShortCode(Long id) {
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("ID must be positive");
         }
+
+        StringBuilder sb = new StringBuilder();
+        while (id > 0) {
+            sb.append(BASE62.charAt((int) (id % 62)));
+            id /= 62;
+        }
+        return sb.reverse().toString();
     }
 }
