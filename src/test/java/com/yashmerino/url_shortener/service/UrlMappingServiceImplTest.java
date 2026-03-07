@@ -2,14 +2,12 @@ package com.yashmerino.url_shortener.service;
 
 import com.yashmerino.url_shortener.model.UrlMapping;
 import com.yashmerino.url_shortener.model.dto.ShortUrlDTO;
-import com.yashmerino.url_shortener.model.dto.UrlMappingPostDTO;
 import com.yashmerino.url_shortener.repository.UrlMappingRepository;
 import com.yashmerino.url_shortener.service.impl.UrlMappingServiceImpl;
 import com.yashmerino.url_shortener.util.HashUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -39,7 +37,7 @@ class UrlMappingServiceImplTest {
 
     @Test
     void shorten_ShouldSaveUrlAndGenerateBase62ShortCode() {
-        UrlMappingPostDTO inputDto = new UrlMappingPostDTO("https://google.com");
+        final String originalURL = "https://google.com";
         
         UrlMapping savedMapping = UrlMapping.builder()
                 .id(1L)
@@ -50,19 +48,19 @@ class UrlMappingServiceImplTest {
         
         when(urlMappingRepository.save(any(UrlMapping.class))).thenReturn(savedMapping);
         
-        ShortUrlDTO result = urlMappingService.shorten(inputDto);
+        ShortUrlDTO result = urlMappingService.shorten(originalURL);
         
         assertThat(result).isNotNull();
         assertThat(result.getOriginalUrl()).isEqualTo("https://google.com");
-        assertThat(result.getShortCode()).isEqualTo("1"); // Base62(1L) = "1"
-        assertThat(result.getShortUrl()).endsWith("/1"); // No /redirect in path
+        assertThat(result.getShortCode()).isEqualTo("1");
+        assertThat(result.getShortUrl()).endsWith("/1");
         
         verify(urlMappingRepository, times(2)).save(any(UrlMapping.class));
     }
 
     @Test
     void shorten_ShouldCreateShortUrlWithCorrectBase62Format() {
-        UrlMappingPostDTO inputDto = new UrlMappingPostDTO("https://example.com");
+        final String originalURL = "https://example.com";
         
         UrlMapping savedMapping = UrlMapping.builder()
                 .id(42L)
@@ -73,11 +71,11 @@ class UrlMappingServiceImplTest {
         
         when(urlMappingRepository.save(any(UrlMapping.class))).thenReturn(savedMapping);
         
-        ShortUrlDTO result = urlMappingService.shorten(inputDto);
+        ShortUrlDTO result = urlMappingService.shorten(originalURL);
         
         String expectedShortCode = HashUtils.generateShortCode(42L);
         assertThat(result.getShortCode()).isEqualTo(expectedShortCode);
-        assertThat(result.getShortUrl()).endsWith("/" + expectedShortCode); // No /redirect in path
+        assertThat(result.getShortUrl()).endsWith("/" + expectedShortCode);
     }
 
     @Test

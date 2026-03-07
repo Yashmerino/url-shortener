@@ -31,7 +31,7 @@ public class UrlMapping {
     /**
      * Short code.
      */
-    @Column(name = "short_code", nullable = true)
+    @Column(name = "short_code")
     private String shortCode;
 
     /**

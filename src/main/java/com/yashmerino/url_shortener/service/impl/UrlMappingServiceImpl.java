@@ -2,13 +2,11 @@ package com.yashmerino.url_shortener.service.impl;
 
 import com.yashmerino.url_shortener.model.UrlMapping;
 import com.yashmerino.url_shortener.model.dto.ShortUrlDTO;
-import com.yashmerino.url_shortener.model.dto.UrlMappingPostDTO;
 import com.yashmerino.url_shortener.repository.UrlMappingRepository;
 import com.yashmerino.url_shortener.service.UrlMappingService;
 import com.yashmerino.url_shortener.util.HashUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -29,15 +27,13 @@ public class UrlMappingServiceImpl implements UrlMappingService {
     /**
      * Shortens the original URL
      *
-     * @param urlMappingPostDTO is the original URL object.
+     * @param originalURL is the original URL.
      *
      * @return the Short URL DTO.
      */
     @Override
     @Transactional
-    public ShortUrlDTO shorten(UrlMappingPostDTO urlMappingPostDTO) {
-        final String originalURL = urlMappingPostDTO.getOriginalUrl();
-
+    public ShortUrlDTO shorten(final String originalURL) {
         // Create and save the URL mapping first to get the ID
         UrlMapping urlMapping = UrlMapping.builder()
                 .originalUrl(originalURL)
@@ -52,14 +48,7 @@ public class UrlMappingServiceImpl implements UrlMappingService {
         
         // Update the short code in the database
         savedMapping.setShortCode(shortCode);
-        
-        try {
-            urlMappingRepository.save(savedMapping);
-        } catch (DataIntegrityViolationException e) {
-            // TODO: Handle duplicate short code (DataIntegrityViolationException for uk_short_code constraint)
-            // Possible solutions: retry with modified ID, or return error
-            throw e;
-        }
+        urlMappingRepository.save(savedMapping);
 
         String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .build()

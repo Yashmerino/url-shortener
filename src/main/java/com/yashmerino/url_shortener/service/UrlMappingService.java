@@ -2,7 +2,6 @@ package com.yashmerino.url_shortener.service;
 
 import com.yashmerino.url_shortener.model.UrlMapping;
 import com.yashmerino.url_shortener.model.dto.ShortUrlDTO;
-import com.yashmerino.url_shortener.model.dto.UrlMappingPostDTO;
 
 /**
  * Shortener service interface.
@@ -11,11 +10,11 @@ public interface UrlMappingService {
     /**
      * Shortens the original URL
      *
-     * @param urlMappingPostDTO is the original URL object.
+     * @param originalUrl is the original URL object.
      *
      * @return the Short URL DTO.
      */
-    ShortUrlDTO shorten(final UrlMappingPostDTO urlMappingPostDTO);
+    ShortUrlDTO shorten(final String originalUrl);
 
     /**
      * Redirects the user to original URL.
