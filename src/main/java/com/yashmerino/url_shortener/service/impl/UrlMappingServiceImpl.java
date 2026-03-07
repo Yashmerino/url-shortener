@@ -7,6 +7,7 @@ import com.yashmerino.url_shortener.service.UrlMappingService;
 import com.yashmerino.url_shortener.util.HashUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -69,6 +70,7 @@ public class UrlMappingServiceImpl implements UrlMappingService {
      * @return the URL Mapping entity.
      */
     @Override
+    @Cacheable(value = "urlMappings", key = "#shortCode")
     public UrlMapping redirect(String shortCode) {
         return this.urlMappingRepository.findByShortCode(shortCode);
     }

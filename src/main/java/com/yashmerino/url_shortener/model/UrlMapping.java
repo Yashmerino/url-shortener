@@ -3,6 +3,8 @@ package com.yashmerino.url_shortener.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -14,7 +16,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class UrlMapping {
+public class UrlMapping implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     /**
      * Entity id.
      */

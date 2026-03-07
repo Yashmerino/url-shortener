@@ -1,5 +1,6 @@
 package com.yashmerino.url_shortener.controller;
 
+import com.yashmerino.url_shortener.config.TestCacheConfig;
 import com.yashmerino.url_shortener.model.UrlMapping;
 import com.yashmerino.url_shortener.model.dto.ShortUrlDTO;
 import com.yashmerino.url_shortener.service.UrlMappingService;
@@ -7,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -20,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ViewController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(TestCacheConfig.class)
 class ViewControllerTest {
 
     @Autowired
