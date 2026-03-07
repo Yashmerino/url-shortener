@@ -1,5 +1,6 @@
 package com.yashmerino.url_shortener.controller;
 
+import com.yashmerino.url_shortener.model.UrlMapping;
 import com.yashmerino.url_shortener.service.UrlMappingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -59,8 +60,12 @@ public class ViewController {
      * @param shortCode the short code.
      * @return redirect to original URL or not found page.
      */
-    @GetMapping("/redirect/{shortCode}")
+    @GetMapping("/{shortCode}")
     public String redirect(@PathVariable String shortCode) {
+        UrlMapping mapping = urlMappingService.redirect(shortCode);
+        if (mapping != null) {
+            return "redirect:" + mapping.getOriginalUrl();
+        }
         return "error/notfound";
     }
 }
