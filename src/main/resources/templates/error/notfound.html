@@ -7,21 +7,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-br from-red-50 to-orange-100 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="bg-white rounded-lg shadow-xl p-8 sm:p-12 max-w-md w-full">
-        <!-- Language Selector -->
-        <div class="flex justify-end mb-4">
-            <div class="relative inline-block text-left">
-                <select
-                        id="languageSelect"
-                        onchange="changeLanguage(this.value)"
-                        class="block w-full pl-3 pr-8 py-1 text-xs border border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md bg-gray-50 text-gray-600 font-medium cursor-pointer shadow-sm"
-                >
-                    <option value="en" th:selected="${#locale.language == 'en'}">English (EN)</option>
-                    <option value="ro" th:selected="${#locale.language == 'ro'}">Română (RO)</option>
-                </select>
-            </div>
-        </div>
+    <!-- Language Selector -->
+    <div class="absolute top-8 right-8 flex gap-2">
+        <a href="?lang=en" class="px-3 py-2 rounded-lg bg-white text-gray-800 hover:bg-gray-100 text-sm font-medium transition border border-gray-300">EN</a>
+        <a href="?lang=ro" class="px-3 py-2 rounded-lg bg-white text-gray-800 hover:bg-gray-100 text-sm font-medium transition border border-gray-300">RO</a>
+    </div>
 
+    <div class="bg-white rounded-lg shadow-xl p-8 sm:p-12 max-w-md w-full">
         <!-- 404 Icon -->
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
@@ -47,12 +39,5 @@
             <p class="text-xs text-gray-500" th:text="#{app.footer}">Built with Tailwind CSS & Thymeleaf</p>
         </div>
     </div>
-
-    <script>
-        function changeLanguage(lang) {
-            const currentUrl = window.location.pathname;
-            window.location.href = currentUrl + '?lang=' + lang;
-        }
-    </script>
 </body>
 </html>

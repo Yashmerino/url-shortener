@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.util.List;
 
 /**
  * Controller for handling Thymeleaf view requests.
@@ -32,6 +35,23 @@ public class ViewController {
     @GetMapping("/")
     public String index(Model model) {
         return "index";
+    }
+
+    /**
+     * Display the recently created URLs page (from the last hour).
+     *
+     * @param model the model to add attributes to.
+     * @return the template name for the recent URLs page.
+     */
+    @GetMapping("/recent")
+    public String recent(Model model) {
+        List<UrlMapping> recentUrls = urlMappingService.getRecentUrls();
+        String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .build()
+                .toUriString();
+        model.addAttribute("recentUrls", recentUrls);
+        model.addAttribute("baseUrl", baseUrl);
+        return "recent";
     }
 
     /**

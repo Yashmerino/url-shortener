@@ -7,21 +7,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
     <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <!-- Language Selector -->
+        <div class="absolute top-8 right-8 flex gap-2">
+            <a href="?lang=en" class="px-3 py-2 rounded-lg bg-white text-gray-800 hover:bg-gray-100 text-sm font-medium transition border border-gray-300">EN</a>
+            <a href="?lang=ro" class="px-3 py-2 rounded-lg bg-white text-gray-800 hover:bg-gray-100 text-sm font-medium transition border border-gray-300">RO</a>
+        </div>
+
         <div class="bg-white rounded-lg shadow-xl p-8 sm:p-12 max-w-md w-full">
-
-            <div class="flex justify-end mb-4">
-                <div class="relative inline-block text-left">
-                    <select
-                            id="languageSelect"
-                            onchange="changeLanguage(this.value)"
-                            class="block w-full pl-3 pr-8 py-1 text-xs border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md bg-gray-50 text-gray-600 font-medium cursor-pointer shadow-sm"
-                    >
-                        <option value="en" th:selected="${#locale.language == 'en'}">English (EN)</option>
-                        <option value="ro" th:selected="${#locale.language == 'ro'}">Română (RO)</option>
-                    </select>
-                </div>
-            </div>
-
             <div class="text-center mb-8">
                 <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2" th:text="#{app.header}">URL Shortener</h1>
                 <p class="text-gray-600" th:text="#{app.subheader}">Shorten your long URLs instantly</p>
@@ -88,7 +80,10 @@
             </div>
 
             <div class="mt-10 pt-6 border-t border-gray-200 text-center">
-                <p class="text-xs text-gray-500" th:text="#{app.footer}">Built with Tailwind CSS & Thymeleaf</p>
+                <p class="text-xs text-gray-500 mb-3" th:text="#{app.footer}">Built with Tailwind CSS & Thymeleaf</p>
+                <a href="/recent" class="inline-block text-indigo-600 hover:text-indigo-700 text-xs font-medium underline" th:text="#{recent.viewButton}">
+                    View Recent URLs →
+                </a>
             </div>
         </div>
 
@@ -108,12 +103,6 @@
                     button.classList.remove('bg-green-600');
                     button.classList.add('bg-indigo-600');
                 }, 2000);
-            }
-
-            function changeLanguage(lang) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('lang', lang);
-                window.location.href = url.toString();
             }
         </script>
     </body>

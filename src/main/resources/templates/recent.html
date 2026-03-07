@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{recent.title}">Recently Generated URLs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <!-- Language Selector -->
+    <div class="absolute top-8 right-8 flex gap-2">
+        <a href="?lang=en" class="px-3 py-2 rounded-lg bg-white text-gray-800 hover:bg-gray-100 text-sm font-medium transition border border-gray-300">EN</a>
+        <a href="?lang=ro" class="px-3 py-2 rounded-lg bg-white text-gray-800 hover:bg-gray-100 text-sm font-medium transition border border-gray-300">RO</a>
+    </div>
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Header Section -->
+        <div class="bg-white rounded-lg shadow-xl p-8 mb-6">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2" th:text="#{recent.header}">Recent URLs</h1>
+                <p class="text-gray-600" th:text="#{recent.subheader}">URLs created in the last hour</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 justify-center flex-wrap">
+                <a href="/" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200 transform hover:scale-105">
+                    <span th:text="#{recent.new}">Create New</span>
+                </a>
+                <a href="/" class="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-6 rounded-lg transition duration-200">
+                    <span th:text="#{recent.home}">Back to Home</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- URLs List Section -->
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(recentUrls)}" class="p-8">
+                <div class="text-center">
+                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p class="text-gray-600 text-lg" th:text="#{recent.empty}">No URLs created in the last hour</p>
+                </div>
+            </div>
+
+            <!-- Table View (for larger screens) -->
+            <div th:unless="${#lists.isEmpty(recentUrls)}" class="hidden sm:block overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900" th:text="#{recent.shortUrl}">Short URL</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900" th:text="#{recent.originalUrl}">Original URL</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900" th:text="#{recent.createdAt}">Created at</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <tr th:each="url : ${recentUrls}" class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <input type="text" th:value="|${baseUrl}/${url.shortCode}|" readonly class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded text-indigo-600 font-semibold text-sm" />
+                                    <button type="button" class="copy-btn bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded text-sm font-medium transition" th:text="#{recent.copy}">Copy</button>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a th:href="${url.originalUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-700 break-all">
+                                    <span th:text="${#strings.abbreviate(url.originalUrl, 50)}"></span>
+                                </a>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600" th:text="${#temporals.format(url.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2024-01-01 12:00:00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Card View (for mobile screens) -->
+            <div th:unless="${#lists.isEmpty(recentUrls)}" class="sm:hidden divide-y divide-gray-200">
+                <div th:each="url : ${recentUrls}" class="p-4">
+                    <div class="mb-3">
+                        <p class="text-xs text-gray-500 mb-1" th:text="#{recent.shortUrl}">Short URL</p>
+                        <div class="flex items-center gap-2">
+                            <input type="text" th:value="|${baseUrl}/${url.shortCode}|" readonly class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded text-indigo-600 font-semibold text-sm" />
+                            <button type="button" class="copy-btn bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded text-sm font-medium transition whitespace-nowrap" th:text="#{recent.copy}">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <p class="text-xs text-gray-500 mb-1" th:text="#{recent.originalUrl}">Original URL</p>
+                        <a th:href="${url.originalUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-700 break-all text-sm">
+                            <span th:text="${#strings.abbreviate(url.originalUrl, 50)}"></span>
+                        </a>
+                    </div>
+
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1" th:text="#{recent.createdAt}">Created at</p>
+                        <p class="text-sm text-gray-600" th:text="${#temporals.format(url.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2024-01-01 12:00:00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8">
+            <p class="text-xs text-gray-500">URL Shortener Service</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            
+            copyButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const input = this.previousElementSibling;
+                    input.select();
+                    document.execCommand('copy');
+                    
+                    const originalText = this.textContent;
+                    this.textContent = document.documentElement.lang === 'ro' ? 'Copiat!' : 'Copied!';
+                    this.classList.add('bg-green-600');
+                    this.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                    
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                        this.classList.remove('bg-green-600');
+                        this.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                    }, 2000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

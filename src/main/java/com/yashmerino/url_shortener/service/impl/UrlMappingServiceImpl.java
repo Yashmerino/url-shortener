@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Shortener service base implementation.
@@ -73,5 +74,16 @@ public class UrlMappingServiceImpl implements UrlMappingService {
     @Cacheable(value = "urlMappings", key = "#shortCode")
     public UrlMapping redirect(String shortCode) {
         return this.urlMappingRepository.findByShortCode(shortCode);
+    }
+
+    /**
+     * Get recently created URLs from the last hour.
+     *
+     * @return list of recent URL mappings.
+     */
+    @Override
+    public List<UrlMapping> getRecentUrls() {
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        return this.urlMappingRepository.findByCreatedAtAfterAndIsArchivedFalseOrderByCreatedAtDesc(oneHourAgo);
     }
 }

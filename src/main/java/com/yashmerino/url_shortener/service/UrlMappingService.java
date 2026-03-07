@@ -3,6 +3,8 @@ package com.yashmerino.url_shortener.service;
 import com.yashmerino.url_shortener.model.UrlMapping;
 import com.yashmerino.url_shortener.model.dto.ShortUrlDTO;
 
+import java.util.List;
+
 /**
  * Shortener service interface.
  */
@@ -24,4 +26,11 @@ public interface UrlMappingService {
      * @return the URL Mapping entity.
      */
     UrlMapping redirect(final String shortCode);
+
+    /**
+     * Get recently created URLs from the last hour.
+     *
+     * @return list of recent URL mappings.
+     */
+    List<UrlMapping> getRecentUrls();
 }
