@@ -45,12 +45,12 @@ class ViewControllerTest {
 
         mockMvc.perform(post("/")
                         .param("originalUrl", "https://google.com"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("index"))
-                .andExpect(model().attributeExists("shortUrl"))
-                .andExpect(model().attribute("shortUrl", "http://localhost/abc123"))
-                .andExpect(model().attribute("shortCode", "abc123"))
-                .andExpect(model().attribute("originalUrl", "https://google.com"));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/"))
+                .andExpect(flash().attributeExists("shortUrl"))
+                .andExpect(flash().attribute("shortUrl", "http://localhost/abc123"))
+                .andExpect(flash().attribute("shortCode", "abc123"))
+                .andExpect(flash().attribute("originalUrl", "https://google.com"));
     }
 
     @Test
@@ -60,9 +60,8 @@ class ViewControllerTest {
 
         mockMvc.perform(post("/")
                         .param("originalUrl", "https://google.com"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("index"))
-                .andExpect(model().attributeExists("error"))
-                .andExpect(model().attribute("originalUrl", "https://google.com"));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/"))
+                .andExpect(flash().attributeExists("error"));
     }
 }
