@@ -70,6 +70,6 @@ public class UrlMappingServiceImpl implements UrlMappingService {
      */
     @Override
     public UrlMapping redirect(String shortCode) {
-        return this.urlMappingRepository.findByShortCode(shortCode).orElseThrow(IllegalArgumentException::new);
+        return this.urlMappingRepository.findByShortCode(shortCode);
     }
 }

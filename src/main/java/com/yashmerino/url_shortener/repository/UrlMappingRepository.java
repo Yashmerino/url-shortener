@@ -4,8 +4,6 @@ import com.yashmerino.url_shortener.model.UrlMapping;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 /**
  * URL Mapping JPA entity repository.
  */
@@ -25,7 +23,7 @@ public interface UrlMappingRepository extends JpaRepository<UrlMapping, Long> {
      *
      * @param shortCode the short code.
      *
-     * @return Optional of UrlMapping.
+     * @return UrlMapping.
      */
-    Optional<UrlMapping> findByShortCode(final String shortCode);
+    UrlMapping findByShortCode(final String shortCode);
 }

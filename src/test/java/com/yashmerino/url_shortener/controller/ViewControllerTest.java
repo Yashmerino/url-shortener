@@ -1,5 +1,6 @@
 package com.yashmerino.url_shortener.controller;
 
+import com.yashmerino.url_shortener.model.UrlMapping;
 import com.yashmerino.url_shortener.model.dto.ShortUrlDTO;
 import com.yashmerino.url_shortener.service.UrlMappingService;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -63,5 +66,32 @@ class ViewControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/"))
                 .andExpect(flash().attributeExists("error"));
+    }
+
+    @Test
+    void redirect_ShouldRedirect_WhenSuccessful() throws Exception {
+        final UrlMapping urlMapping = UrlMapping.builder()
+                .id(1L)
+                .createdAt(LocalDateTime.now())
+                .isArchived(false)
+                .originalUrl("https://google.com")
+                .shortCode("googl1")
+                .build();
+
+        when(urlMappingService.redirect(any(String.class)))
+                .thenReturn(urlMapping);
+
+        mockMvc.perform(get("/googl1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:https://google.com"));
+    }
+
+    @Test
+    void redirect_ShouldRedirectToError_WhenDoesNotExist() throws Exception {
+        when(urlMappingService.shorten(any(String.class))).thenReturn(null);
+
+        mockMvc.perform(get("/googl1"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("error/notfound"));
     }
 }

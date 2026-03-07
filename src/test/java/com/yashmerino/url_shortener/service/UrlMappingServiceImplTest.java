@@ -41,7 +41,7 @@ class UrlMappingServiceImplTest {
         
         UrlMapping savedMapping = UrlMapping.builder()
                 .id(1L)
-                .originalUrl("https://google.com")
+                .originalUrl(originalURL)
                 .createdAt(LocalDateTime.now())
                 .isArchived(false)
                 .build();
@@ -51,7 +51,7 @@ class UrlMappingServiceImplTest {
         ShortUrlDTO result = urlMappingService.shorten(originalURL);
         
         assertThat(result).isNotNull();
-        assertThat(result.getOriginalUrl()).isEqualTo("https://google.com");
+        assertThat(result.getOriginalUrl()).isEqualTo(originalURL);
         assertThat(result.getShortCode()).isEqualTo("1");
         assertThat(result.getShortUrl()).endsWith("/1");
         
@@ -64,7 +64,7 @@ class UrlMappingServiceImplTest {
         
         UrlMapping savedMapping = UrlMapping.builder()
                 .id(42L)
-                .originalUrl("https://example.com")
+                .originalUrl(originalURL)
                 .createdAt(LocalDateTime.now())
                 .isArchived(false)
                 .build();
@@ -89,4 +89,31 @@ class UrlMappingServiceImplTest {
         assertThat(code1).matches("[0-9A-Za-z]+");
     }
 
+    @Test
+    void redirect_ShouldReturnCorrectMapping() {
+        final String originalURL = "https://example.com";
+
+        UrlMapping savedMapping = UrlMapping.builder()
+                .id(42L)
+                .originalUrl(originalURL)
+                .shortCode("example")
+                .createdAt(LocalDateTime.now())
+                .isArchived(false)
+                .build();
+
+        when(urlMappingRepository.findByShortCode("example")).thenReturn(savedMapping);
+
+        UrlMapping urlMapping = urlMappingService.redirect("example");
+
+        assertThat(urlMapping.getShortCode()).isEqualTo("example");
+        assertThat(urlMapping.getOriginalUrl()).endsWith(originalURL);
+    }
+
+    @Test
+    void redirect_ShouldReturnNull_WhenDoesNotExist() {
+        when(urlMappingRepository.findByShortCode("error")).thenReturn(null);
+
+        UrlMapping urlMapping = urlMappingService.redirect("error");
+        assertThat(urlMapping).isNull();
+    }
 }

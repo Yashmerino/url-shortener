@@ -1,7 +1,6 @@
 package com.yashmerino.url_shortener.repository;
 
 import com.yashmerino.url_shortener.model.UrlMapping;
-import com.yashmerino.url_shortener.util.HashUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -12,10 +11,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DataJpaTest
 @Testcontainers
@@ -47,18 +44,17 @@ class UrlMappingRepositoryTest {
     void findByShortCode_ShouldReturnObject_WhenItExists() {
         this.createUrlMapping("https://google.com", "googl1");
 
-        final UrlMapping urlMapping = urlMappingRepository.findByShortCode("googl1").orElse(null);
+        final UrlMapping urlMapping = urlMappingRepository.findByShortCode("googl1");
         assertThat(urlMapping).isNotNull();
         assertThat(urlMapping.getShortCode()).isEqualTo("googl1");
         assertThat(urlMapping.getOriginalUrl()).isEqualTo("https://google.com");
     }
 
     @Test
-    void findByShortCode_ShouldReturnEmptyOptional_WhenItDoesNotExist() {
-        final Optional<UrlMapping> urlMappingOptional = urlMappingRepository.findByShortCode("googl1");
+    void findByShortCode_ShouldReturnNull_WhenItDoesNotExist() {
+        final UrlMapping urlMappingOptional = urlMappingRepository.findByShortCode("googl1");
 
-        assertThat(urlMappingOptional).isNotNull();
-        assertThat(urlMappingOptional.isPresent()).isFalse();
+        assertThat(urlMappingOptional).isNull();
     }
 
     private void createUrlMapping(final String originalURL, final String shortCode) {
