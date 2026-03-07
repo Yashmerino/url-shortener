@@ -60,6 +60,108 @@ class UrlMappingRepositoryTest {
         assertThat(urlMappingOptional).isNull();
     }
 
+    @Test
+    void findByCreatedAtAfterAndIsArchivedFalse_ShouldReturnUrlsFromLastHour() {
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        LocalDateTime thirtyMinutesAgo = LocalDateTime.now().minusMinutes(30);
+        LocalDateTime twoHoursAgo = LocalDateTime.now().minusHours(2);
+
+        UrlMapping url1 = UrlMapping.builder()
+                .originalUrl("https://google.com")
+                .shortCode("googl1")
+                .createdAt(thirtyMinutesAgo)
+                .isArchived(false)
+                .build();
+
+        UrlMapping url2 = UrlMapping.builder()
+                .originalUrl("https://github.com")
+                .shortCode("gith2")
+                .createdAt(LocalDateTime.now().minusMinutes(5))
+                .isArchived(false)
+                .build();
+
+        UrlMapping url3 = UrlMapping.builder()
+                .originalUrl("https://archived.com")
+                .shortCode("arch3")
+                .createdAt(thirtyMinutesAgo)
+                .isArchived(true)
+                .build();
+
+        UrlMapping url4 = UrlMapping.builder()
+                .originalUrl("https://old.com")
+                .shortCode("old4")
+                .createdAt(twoHoursAgo)
+                .isArchived(false)
+                .build();
+
+        urlMappingRepository.save(url1);
+        urlMappingRepository.save(url2);
+        urlMappingRepository.save(url3);
+        urlMappingRepository.save(url4);
+
+        var result = urlMappingRepository.findByCreatedAtAfterAndIsArchivedFalseOrderByCreatedAtDesc(oneHourAgo);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getShortCode()).isEqualTo("gith2");
+        assertThat(result.get(1).getShortCode()).isEqualTo("googl1");
+    }
+
+    @Test
+    void findByCreatedAtAfterAndIsArchivedFalse_ShouldReturnEmpty_WhenNoUrlsInTimeRange() {
+        LocalDateTime twoHoursAgo = LocalDateTime.now().minusHours(2);
+
+        UrlMapping url = UrlMapping.builder()
+                .originalUrl("https://old.com")
+                .shortCode("old1")
+                .createdAt(twoHoursAgo)
+                .isArchived(false)
+                .build();
+
+        urlMappingRepository.save(url);
+
+        var result = urlMappingRepository.findByCreatedAtAfterAndIsArchivedFalseOrderByCreatedAtDesc(LocalDateTime.now().minusHours(1));
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void findByCreatedAtAfterAndIsArchivedFalse_ShouldOrderByCreatedAtDescending() {
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        LocalDateTime now = LocalDateTime.now();
+
+        UrlMapping url1 = UrlMapping.builder()
+                .originalUrl("https://first.com")
+                .shortCode("first1")
+                .createdAt(oneHourAgo.plusMinutes(1))
+                .isArchived(false)
+                .build();
+
+        UrlMapping url2 = UrlMapping.builder()
+                .originalUrl("https://second.com")
+                .shortCode("second2")
+                .createdAt(now)
+                .isArchived(false)
+                .build();
+
+        UrlMapping url3 = UrlMapping.builder()
+                .originalUrl("https://third.com")
+                .shortCode("third3")
+                .createdAt(oneHourAgo.plusMinutes(30))
+                .isArchived(false)
+                .build();
+
+        urlMappingRepository.save(url1);
+        urlMappingRepository.save(url2);
+        urlMappingRepository.save(url3);
+
+        var result = urlMappingRepository.findByCreatedAtAfterAndIsArchivedFalseOrderByCreatedAtDesc(oneHourAgo);
+
+        assertThat(result).hasSize(3);
+        assertThat(result.get(0).getShortCode()).isEqualTo("second2");
+        assertThat(result.get(1).getShortCode()).isEqualTo("third3");
+        assertThat(result.get(2).getShortCode()).isEqualTo("first1");
+    }
+
     private void createUrlMapping(final String originalURL, final String shortCode) {
         UrlMapping mapping = UrlMapping.builder()
                 .originalUrl(originalURL)

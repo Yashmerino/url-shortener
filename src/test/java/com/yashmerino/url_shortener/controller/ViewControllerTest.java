@@ -14,6 +14,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -97,5 +99,47 @@ class ViewControllerTest {
         mockMvc.perform(get("/googl1"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error/notfound"));
+    }
+
+    @Test
+    void recent_ShouldReturnRecentTemplate_WithRecentUrls() throws Exception {
+        final UrlMapping url1 = UrlMapping.builder()
+                .id(1L)
+                .createdAt(LocalDateTime.now().minusMinutes(5))
+                .isArchived(false)
+                .originalUrl("https://google.com")
+                .shortCode("googl1")
+                .build();
+
+        final UrlMapping url2 = UrlMapping.builder()
+                .id(2L)
+                .createdAt(LocalDateTime.now().minusMinutes(15))
+                .isArchived(false)
+                .originalUrl("https://github.com")
+                .shortCode("gith2")
+                .build();
+
+        when(urlMappingService.getRecentUrls())
+                .thenReturn(Arrays.asList(url1, url2));
+
+        mockMvc.perform(get("/recent"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("recent"))
+                .andExpect(model().attributeExists("recentUrls"))
+                .andExpect(model().attributeExists("baseUrl"))
+                .andExpect(model().attribute("recentUrls", Arrays.asList(url1, url2)));
+    }
+
+    @Test
+    void recent_ShouldReturnEmptyList_WhenNoRecentUrls() throws Exception {
+        when(urlMappingService.getRecentUrls())
+                .thenReturn(List.of());
+
+        mockMvc.perform(get("/recent"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("recent"))
+                .andExpect(model().attributeExists("recentUrls"))
+                .andExpect(model().attributeExists("baseUrl"))
+                .andExpect(model().attribute("recentUrls", List.of()));
     }
 }

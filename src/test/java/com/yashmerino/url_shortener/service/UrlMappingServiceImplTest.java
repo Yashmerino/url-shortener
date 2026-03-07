@@ -16,6 +16,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -115,5 +118,83 @@ class UrlMappingServiceImplTest {
 
         UrlMapping urlMapping = urlMappingService.redirect("error");
         assertThat(urlMapping).isNull();
+    }
+
+    @Test
+        void getRecentUrls_ShouldReturnUrlsCreatedInLastHour() {
+            UrlMapping url1 = UrlMapping.builder()
+                    .id(1L)
+                    .originalUrl("https://google.com")
+                    .shortCode("googl1")
+                    .createdAt(LocalDateTime.now().minusMinutes(30))
+                    .isArchived(false)
+                    .build();
+
+            UrlMapping url2 = UrlMapping.builder()
+                    .id(2L)
+                    .originalUrl("https://github.com")
+                    .shortCode("gith2")
+                    .createdAt(LocalDateTime.now().minusMinutes(5))
+                    .isArchived(false)
+                    .build();
+
+            when(urlMappingRepository.findByCreatedAtAfterAndIsArchivedFalseOrderByCreatedAtDesc(any(LocalDateTime.class)))
+                    .thenReturn(Arrays.asList(url2, url1));
+
+            List<UrlMapping> result = urlMappingService.getRecentUrls();
+
+            assertThat(result).hasSize(2);
+            assertThat(result.get(0).getShortCode()).isEqualTo("gith2");
+            assertThat(result.get(1).getShortCode()).isEqualTo("googl1");
+        
+        verify(urlMappingRepository, times(1)).findByCreatedAtAfterAndIsArchivedFalseOrderByCreatedAtDesc(any(LocalDateTime.class));
+    }
+
+    @Test
+    void getRecentUrls_ShouldReturnEmpty_WhenNoRecentUrls() {
+        when(urlMappingRepository.findByCreatedAtAfterAndIsArchivedFalseOrderByCreatedAtDesc(any(LocalDateTime.class)))
+                .thenReturn(Collections.emptyList());
+
+        List<UrlMapping> result = urlMappingService.getRecentUrls();
+
+        assertThat(result).isEmpty();
+        verify(urlMappingRepository, times(1)).findByCreatedAtAfterAndIsArchivedFalseOrderByCreatedAtDesc(any(LocalDateTime.class));
+    }
+
+    @Test
+    void getRecentUrls_ShouldOrderByCreatedAtDescending() {
+        UrlMapping url1 = UrlMapping.builder()
+                .id(1L)
+                .originalUrl("https://first.com")
+                .shortCode("first1")
+                .createdAt(LocalDateTime.now().minusMinutes(30))
+                .isArchived(false)
+                .build();
+
+        UrlMapping url2 = UrlMapping.builder()
+                .id(2L)
+                .originalUrl("https://second.com")
+                .shortCode("second2")
+                .createdAt(LocalDateTime.now().minusMinutes(5))
+                .isArchived(false)
+                .build();
+
+        UrlMapping url3 = UrlMapping.builder()
+                .id(3L)
+                .originalUrl("https://third.com")
+                .shortCode("third3")
+                .createdAt(LocalDateTime.now().minusMinutes(15))
+                .isArchived(false)
+                .build();
+
+        when(urlMappingRepository.findByCreatedAtAfterAndIsArchivedFalseOrderByCreatedAtDesc(any(LocalDateTime.class)))
+                .thenReturn(Arrays.asList(url2, url3, url1));
+
+        List<UrlMapping> result = urlMappingService.getRecentUrls();
+
+        assertThat(result).hasSize(3);
+        assertThat(result.get(0).getShortCode()).isEqualTo("second2");
+        assertThat(result.get(1).getShortCode()).isEqualTo("third3");
+        assertThat(result.get(2).getShortCode()).isEqualTo("first1");
     }
 }
