@@ -52,3 +52,34 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+sonar {
+	properties {
+		property "sonar.projectKey", "Yashmerino_url-shortener"
+		property "sonar.host.url", "https://sonarcloud.io"
+		property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+		property "sonar.coverage.exclusions", [
+				"**/model/**",
+				"**/config/**",
+		].join(",")
+	}
+}
+
+plugins {
+	id 'jacoco'
+	id "org.sonarqube" version "5.0.0.4638"
+}
+
+jacoco {
+	toolVersion = "0.8.12"
+}
+
+jacocoTestReport {
+	reports {
+		xml.required = true
+	}
+}
+
+test {
+	finalizedBy jacocoTestReport
+}
