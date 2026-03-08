@@ -1,0 +1,14 @@
+FROM gradle:8-jdk24
+
+WORKDIR /app
+
+COPY build.gradle settings.gradle ./
+
+RUN gradle dependencies --no-daemon || true
+
+COPY src /app/src
+
+EXPOSE 8080
+EXPOSE 5005
+
+CMD ["gradle", "bootRun", "--no-daemon", "-PjvmArgs=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"]
