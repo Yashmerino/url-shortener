@@ -21,6 +21,8 @@ This will:
 - Start PostgreSQL (port 5432)
 - Start Redis (port 6379)
 - Start Nginx reverse proxy (port 80)
+- Start Prometheus (port 9090)
+- Start Grafana (port 3000)
 - Start the URL Shortener app (port 8080, exposed via Nginx)
 
 ### Stop and Cleanup
@@ -101,6 +103,23 @@ Connect using Redis CLI:
 ```bash
 redis-cli -h localhost -p 6379
 ```
+
+### Prometheus
+- **Host**: `localhost`
+- **Port**: `9090`
+- Metrics scraping and monitoring of the URL Shortener application
+
+Access Prometheus: `http://localhost:9090`
+
+### Grafana
+- **Host**: `localhost`
+- **Port**: `3000`
+- **Default User**: `admin`
+- **Default Password**: `admin`
+
+Access Grafana dashboards: `http://localhost:3000`
+
+Grafana is connected to Prometheus as a data source and can be used to visualize application metrics.
 
 ## 🌐 Accessing the Application
 

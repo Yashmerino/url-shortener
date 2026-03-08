@@ -92,6 +92,20 @@ services:
       - "9090:9090"
     networks:
       - url-shortener-network
+ 
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - url-shortener-network
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
 
 networks:
   url-shortener-network:
@@ -101,3 +115,4 @@ volumes:
   postgres-data:
   gradle-cache:
   prometheus-data:
+  grafana-data:
