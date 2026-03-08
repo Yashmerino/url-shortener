@@ -53,8 +53,9 @@ services:
     container_name: url-shortener
     expose:
       - "8080"
-    ports: # Remote debugging
-      - "5005:5005"
+    ports:
+      - "8080:8080"
+      - "5005:5005" # Remote debugging
     volumes:
       - ../src:/app/src
       - ../build:/app/build
@@ -81,6 +82,17 @@ services:
     networks:
       - url-shortener-network
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - url-shortener-network
+
 networks:
   url-shortener-network:
     driver: bridge
@@ -88,3 +100,4 @@ networks:
 volumes:
   postgres-data:
   gradle-cache:
+  prometheus-data:
