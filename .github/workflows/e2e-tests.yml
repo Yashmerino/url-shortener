@@ -44,16 +44,38 @@ jobs:
           java-version: '24'
           distribution: 'temurin'
 
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle
+
+      - name: Build Spring Boot app
+        run: ./gradlew build -DskipTests
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/url_shortener
+          SPRING_DATASOURCE_USERNAME: url_shortener
+          SPRING_DATASOURCE_PASSWORD: url_shortener_password
+          SPRING_DATA_REDIS_HOST: localhost
+          SPRING_DATA_REDIS_PORT: 6379
+
       - name: Start Spring Boot app
         run: |
           nohup bash -c './gradlew bootRun > app.log 2>&1 &'
           echo "Waiting for application to start..."
-          sleep 20
-          if ! curl --silent http://localhost:8080 > /dev/null; then
-            echo "Application failed to start"
-            cat app.log
-            exit 1
-          fi
+          for i in {1..60}; do
+            if curl --silent http://localhost:8080 > /dev/null; then
+              echo "Application started successfully"
+              exit 0
+            fi
+            echo "Attempt $i/60 - waiting..."
+            sleep 2
+          done
+          echo "Application failed to start"
+          cat app.log
+          exit 1
         env:
           SPRING_PROFILES_ACTIVE: test
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/url_shortener
