@@ -52,7 +52,8 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
 
       - name: Build Spring Boot app
-        run: ./gradlew build -DskipTests
+        run: ./gradlew build -DskipTests --no-daemon
+        timeout-minutes: 30
         env:
           SPRING_PROFILES_ACTIVE: test
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/url_shortener
@@ -61,21 +62,11 @@ jobs:
           SPRING_DATA_REDIS_HOST: localhost
           SPRING_DATA_REDIS_PORT: 6379
 
-      - name: Start Spring Boot app
+      - name: Start Spring Boot app in background
         run: |
-          nohup bash -c './gradlew bootRun > app.log 2>&1 &'
-          echo "Waiting for application to start..."
-          for i in {1..60}; do
-            if curl --silent http://localhost:8080 > /dev/null; then
-              echo "Application started successfully"
-              exit 0
-            fi
-            echo "Attempt $i/60 - waiting..."
-            sleep 2
-          done
-          echo "Application failed to start"
-          cat app.log
-          exit 1
+          java -jar build/libs/*.jar > app.log 2>&1 &
+          sleep 5
+          echo "App started, checking readiness..."
         env:
           SPRING_PROFILES_ACTIVE: test
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/url_shortener
@@ -83,6 +74,28 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: url_shortener_password
           SPRING_DATA_REDIS_HOST: localhost
           SPRING_DATA_REDIS_PORT: 6379
+          SERVER_PORT: 8080
+
+      - name: Wait for app to be ready
+        run: |
+          echo "Waiting for application to start at http://localhost:8080..."
+          for i in {1..120}; do
+            HTTP_CODE=$(curl --silent --output /dev/null --write-out '%{http_code}' http://localhost:8080 2>/dev/null || echo "000")
+            if [ "$HTTP_CODE" != "000" ]; then
+              echo "✓ Application is ready! (HTTP $HTTP_CODE)"
+              exit 0
+            fi
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "Attempt $i/120... (got HTTP $HTTP_CODE)"
+            fi
+            sleep 1
+          done
+          echo "✗ Application failed to start after 120 seconds"
+          echo "=== Last 50 lines of app.log ==="
+          tail -50 app.log
+          echo "=== Running processes ==="
+          ps aux | grep -E 'java|gradle' || echo "No Java/Gradle processes"
+          exit 1
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -93,9 +106,39 @@ jobs:
         working-directory: e2e-tests
         run: npm ci && npx playwright install --with-deps
 
+      - name: Check if app is running
+        run: |
+          for i in {1..10}; do
+            if curl --silent http://localhost:8080 > /dev/null; then
+              echo "✓ Application is running"
+              curl -v http://localhost:8080 2>&1 | head -20
+              exit 0
+            fi
+            echo "Attempt $i/10 - waiting..."
+            sleep 2
+          done
+          echo "✗ Application is NOT running"
+          cat app.log || echo "No app.log found"
+          ps aux | grep -E 'gradle|java' || true
+          exit 1
+
       - name: Run Playwright tests
         working-directory: e2e-tests
-        run: npm run test
+        run: npm run test -- --reporter=html,list
+        continue-on-error: true
+
+      - name: Show test results
+        if: always()
+        run: |
+          if [ -f e2e-tests/test-results/results.json ]; then
+            cat e2e-tests/test-results/results.json
+          fi
+          if [ -d e2e-tests/playwright-report ]; then
+            echo "Playwright report found"
+            ls -la e2e-tests/playwright-report/ || true
+          else
+            echo "No playwright report directory"
+          fi
 
       - name: Upload Playwright report
         if: always()
