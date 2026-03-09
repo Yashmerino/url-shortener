@@ -33,3 +33,7 @@ jobs:
         with:
           name: playwright-report
           path: e2e-tests/playwright-report/
+
+      - name: Dump Docker logs on failure
+        if: failure()
+        run: docker compose -f e2e-tests/docker-compose.test.yml logs
