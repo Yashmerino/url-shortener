@@ -8,6 +8,13 @@ public class HashUtils {
     private static final String BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
     /**
+     * Private constructor to hide the public one.
+     */
+    private HashUtils () {
+
+    }
+
+    /**
      * Generates a Base62-encoded short code from an ID.
      *
      * @param id is the database ID of the URL mapping.
