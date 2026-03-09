@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = 'http://localhost';
+const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost';
 
 test.describe('URL Shortener E2E Tests', () => {
 
