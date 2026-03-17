@@ -43,7 +43,7 @@ open http://localhost:8080
 
 ## Development
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for:
+See [DEVELOPMENT.md](development/README.md) for:
 - Setting up development environment
 - Running tests
 - Database migrations
